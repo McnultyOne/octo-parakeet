@@ -95,7 +95,6 @@ local*
 
 # Ignore data files
 *.txt
-*.csv
 *.dta
 *.pkl
 *.pickle
