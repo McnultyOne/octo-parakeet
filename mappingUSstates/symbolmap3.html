@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.states {
+  fill: #ccc;
+  stroke: #fff;
+}
+
+.symbolblue {
+  fill: steelblue;
+  fill-opacity: .7;
+  stroke: #fff;
+}
+
+.symbolorange {
+  fill: orange;
+  fill-opacity: .7;
+  stroke: #fff;
+}
+
+.symbolred {
+  fill: red;
+  fill-opacity: .7;
+  stroke: #fff;
+}
+
+.symbolgreen {
+  fill: green;
+  fill-opacity: .2;
+  stroke: #fff;
+}
+
+</style>
+<body>
+<button id="total">Total Startups</button>
+<button id="op">Operating</button>
+<button id="acqu">Acquired</button>
+<button id="close">No Longer Operating</button>
+<button id="ipo">IPO</button>
+<button id="alldata">Show All</button>
+
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/d3-array.v1.min.js"></script>
+<script src="https://d3js.org/d3-collection.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-format.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-time.v1.min.js"></script>
+<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+<script src="https://d3js.org/d3-scale.v1.min.js"></script>
+<script>
+
+function drawblue(us,data, active_color) {
+    svg.append("path")
+      .attr("class", "states")
+      .datum(topojson.feature(us, us.objects.states))
+      .attr("d", path);
+
+  svg.selectAll("path.symbol")
+      .data(data.features.sort(function(a, b) { return b.properties.population - a.properties.population; }))
+    .enter().append("path")
+      .classed("symbol", true)
+
+  svg.selectAll("path.symbol")
+      .classed("orange", false)
+      .classed("blue", false)
+      .classed(active_color, true)
+      .attr("d", path.pointRadius(function(d) { return radius(d.properties.population); }));
+}
+
+function draworange(us,data) {
+    svg.append("path")
+      .attr("class", "states")
+      .datum(topojson.feature(us, us.objects.states))
+      .attr("d", path1);
+
+  svg.selectAll(".symbolorange")
+      .data(data.features.sort(function(a, b) { return b.properties.population - a.properties.population; }))
+    .enter().append("path")
+      .attr("class", "symbolorange")
+      .attr("d", path1.pointRadius(function(d) { return radius(d.properties.population); }));
+}
+
+function drawgreen(us,data) {
+    svg.append("path")
+      .attr("class", "states")
+      .datum(topojson.feature(us, us.objects.states))
+      .attr("d", path2);
+
+  svg.selectAll(".symbolgreen")
+      .data(data.features.sort(function(a, b) { return b.properties.population - a.properties.population; }))
+    .enter().append("path")
+      .attr("class", "symbolgreen")
+      .attr("d", path2.pointRadius(function(d) { return radius(d.properties.population); }));
+}
+
+var width = 960,
+    height = 500;
+
+//console.log(d3.scale)
+var radius = d3.scale.sqrt()
+    .domain([0, 20])
+    .range([0, 10]);
+
+var path1 = d3.geo.path();
+var path2 = d3.geo.path();
+var path3 = d3.geo.path();
+var path4 = d3.geo.path();
+var path5 = d3.geo.path();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+queue()
+    .defer(d3.json, "us.json")
+    .defer(d3.json, "acquiredcounts.json")
+    .defer(d3.json, "closedcounts.json")
+    .defer(d3.json, "ipocounts.json")
+    .defer(d3.json, "operatingcounts.json")
+    .defer(d3.json, "statecounts.json")
+    .await(ready);
+
+var acquired, closed, ipo, operating, state;
+
+function ready(error, us, acquired, closed, ipo, operating, state) {
+  if (error) throw error;
+
+  //var data;
+
+  data1 = acquired;
+  data2 = state;
+  console.log(data2)
+  //data = centroid;
+  //data = acquired;
+
+  //drawblue(us,closed)
+  //drawblue(us,data1, "blue");
+  //drawblue(us,data2, "orange")
+  draworange(us,data1)
+  drawgreen(us,data2)
+
+  //console.log(closed)
+  //console.log(ipo)
+}
+
+
+
+d3.select("#total")
+  .on("click", function() {
+      drawblue(data1)
+  });
+
+
+
+</script>
