@@ -1,58 +1,196 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Prediction Wizard</title>
+    <link rel="stylesheet" href="static/d3.slider.css" />
+    <style>
 
-.chart rect {
-  fill: steelblue;
-}
+     body {
+       font-family: Verdana,Arial,sans-serif;
+     }
 
-.chart text {
-  fill: white;
-  font: 10px sans-serif;
-  text-anchor: end;
-}
+     h2 {
+       font-size: 1.2em;
+       margin: 60px 0 5px 0;
+       text-align: center;
+       color: gray;
+     }
 
-.legend text{
-  fill: black;
-  font: 10px sans-serif;
-}
+     .space {
+       margin-bottom: 20 px;
+     }
 
-</style>
+     .wrapper {
+       width: 800px;
+       margin-left: auto;
+       margin-right: auto;
+       margin-bottom: 0px;
+     }
 
-<body>
+     span {
+       color: steelblue;
+     }
 
-<button class="seperate_bar">Seperate</button>
-<button class="stacked_bar">Stacked</button>
+      .chart rect {
+        fill: steelblue;
+      }
 
-<br><br>
+      .chart text {
+        fill: white;
+        font: 10px sans-serif;
+        text-anchor: end;
+      }
 
-<svg class="chart"></svg>
-<svg class="legend"></svg>
+      .legend text{
+        fill: black;
+        font: 10px sans-serif;
+      }
 
-<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script>
 
-//global variables
-var data = [25, 35, 18, 22];
-var labels = ['IPO', 'Acquired', 'Open', 'Fail'];
+    </style>
+  </head>
 
-var color = d3.scale.ordinal()
-  .range(["#5181c2", "#6ca874", "#e0b84f", "#c2493d"]);
+  <body>
 
-var width = 500,
-    height = 40;
+    <div id="chart_area" class="wrapper">
+      <h2>Prediction</h2>
+      <p class="space"></p>
+      </div>
+    </div>
 
-var x_scale = d3.scale.linear()
-    .domain([0, d3.max(data)])
-    .range([0, width]);
+    <svg class = "button_spacer"></svg>
 
-//Drawing Seperate
-function draw_seperate(data){
+    <button class="separate_bar">Separate</button>
+    <button class="stacked_bar">Stacked</button>
+    <br><br>
+    
+    <svg></svg>
+    <svg class="chart"></svg>
+    <svg class="legend"></svg>
+    
+    <div id="sliders" class="wrapper">
+
+      <h2 class="feature">Investor tier: <span id="tier">1</span></h2>
+      <div id="tier_slider"></div>
+
+      <h2 class="feature">Funding received: <span id="funding">$500,000,000</span></h2>
+      <div id="funding_slider"></div>
+
+      <h2 class="feature">Days from founding to first investment: <span id="firstInv">100 days</span></h2>
+      <div id="firstInv_slider"></div>
+
+      <h2 class="feature">Total funding period: <span id = "fundingPeriod"> 365 </span></h2>
+      <div id="fundingPeriod_slider"></div>
+
+    </div>
+
+    <!-- Import the libraries: jQuery, d3, d3.slider -->
+    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="static/d3.slider.js"></script>
+
+
+
+    <!-- <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <script>
+    var data = [25, 35, 18, 22];
+    var labels = ['IPO', 'Acquired', 'Open', 'Fail'];
+
+    var curr_view = 'separate';
+
+    var color = d3.scale.ordinal()
+      .range(["#5181c2", "#6ca874", "#e0b84f", "#c2493d"]);
+
+    var width = 500,
+        height = 40;
+
+    var x_scale = d3.scale.linear()
+        .domain([0, d3.max(data)])
+        .range([0, width]);
+
+    var curr_tier = 1;
+    var curr_funding = 500000000;
+    var curr_firstInv = 100;
+    var curr_fundingPeriod = 365;
+    var current_goodness = 50.0;
+   
+    d3.select('#tier_slider')
+      .call(
+      d3.slider()
+      .value(curr_tier)
+      .min(1)
+      .max(5)
+      .step(1)
+      .axis(true)
+      .on("slide", function(evt,value) {
+      d3.select('#tier').text(value);
+      curr_tier = value;
+      getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+      }
+      )
+      );
+
+    d3.select('#funding_slider')
+          .call(
+          d3.slider()
+          .value(curr_funding)
+          .min(0)
+          .max(1000000000)
+          .step(50000)
+          .axis(true)
+          .on("slide", function(evt,value) {
+              d3.select('#funding').text("$" + value);
+              curr_funding = value;
+              getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+              }
+          )
+      );
+
+    d3.select('#firstInv_slider')
+          .call(
+          d3.slider()
+          .value(curr_firstInv)
+          .min(-365)
+          .max(365)
+          .step(5)
+          .axis(true)
+          .on("slide", function(evt,value) {
+              d3.select('#firstInv').text(value + " days");
+              curr_firstInv = value;
+              getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+              }
+          )
+      );
+
+    d3.select('#fundingPeriod_slider')
+      .call(
+      d3.slider()
+      .value(curr_fundingPeriod)
+      .max(1000)
+      .step(5)
+      .axis(true)
+      .on("slide", function(evt,value) {
+      d3.select('#fundingPeriod').text(value > 30? ((value/30)+"months"):(value+"days"));
+      curr_fundingPeriod = value;
+      getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+      }
+      )
+      );
+
+    d3.select(".button_spacer")
+      .attr("width", 300)
+      .attr("height", 1);
+
+function draw_separate(data){
 
   var chart = d3.select(".chart")
       .attr("width", width)
       .attr("height", height * data.length)
+      .attr("align", "center")
 
+  // d3.select(".chart").attr("align", "center");
   //Rectangles
   var bar = chart.selectAll("rect")
         .data(data)
@@ -114,57 +252,86 @@ function draw_seperate(data){
 }
 
 
-function draw_stacked(data){
+    function draw_stacked(data){
 
-  var chart = d3.select(".chart")
-      .attr("width", width)
-      .attr("height", height * data.length)
+      var chart = d3.select(".chart")
+          .attr("width", width)
+          .attr("height", height * data.length)
 
-  var bar = chart.selectAll("rect")
-        .data(data)
-      .enter().append("rect")
-      .style("fill", function(d) { return color(d); });
-
-
-      chart.selectAll("rect")
-        .transition()
-        .duration(500).delay(function (d, i) {return i*100} )
-        .attr("width", function(d) { return d*5 })
-        .attr("height", height - 1)
-        .attr("x", function(d, i) {
-                          return (typeof data[i-1] !== 'undefined') ? (data.slice(0,i).reduce(function(a,b) { return a + b}, 0))*5 : 0 } )
-        .transition()
-        .duration(400).ease("bounce")
-        .attr("y", 1)
-
-      chart.selectAll("text")
+      var bar = chart.selectAll("rect")
           .data(data)
-        .enter().append("text")
+          .enter().append("rect")
+          .style("fill", function(d) { return color(d); });
 
-      chart.selectAll("text")
-        .transition()
-        .duration(500).delay(function (d, i) { return i*100} )
-        .attr("x", function(d, i) {
-                          return (typeof data[i-1] !== 'undefined') ? (data.slice(0,i+1).reduce(function(a,b) { return a + b}, 0))*5 - 3 : data[0] * 5 -3 } )
-        .transition()
-        .duration(400).ease("bounce")
-        .attr("y", 20)
-        .attr("dy", ".35em")
-        .text(function(d) {return d + "%";});
 
-}
+          chart.selectAll("rect")
+            .transition()
+            .duration(500).delay(function (d, i) {return i*100} )
+            .attr("width", function(d) { return d*5 })
+            .attr("height", height - 1)
+            .attr("x", function(d, i) {
+                              return (typeof data[i-1] !== 'undefined') ? (data.slice(0,i).reduce(function(a,b) { return a + b}, 0))*5 : 0 } )
+            .transition()
+            .duration(400).ease("bounce")
+            .attr("y", 1)
 
-draw_seperate(data)
+          chart.selectAll("text")
+              .data(data)
+            .enter().append("text")
 
-//What happens on click
-d3.select("button.seperate_bar")
-	.on("click", function() {
-		draw_seperate(data);
-});
-d3.select("button.stacked_bar")
-	.on("click", function() {
-		draw_stacked(data);
-});
+          chart.selectAll("text")
+            .transition()
+            .duration(500).delay(function (d, i) { return i*100} )
+            .attr("x", function(d, i) {
+                              return (typeof data[i-1] !== 'undefined') ? (data.slice(0,i+1).reduce(function(a,b) { return a + b}, 0))*5 - 3 : data[0] * 5 -3 } )
+            .transition()
+            .duration(400).ease("bounce")
+            .attr("y", 20)
+            .attr("dy", ".35em")
+            .text(function(d) {return d + "%";});
 
-</script>
-</body>
+    }
+
+    draw_separate(data)    
+    var update = data;
+
+    function getAndDrawPred(tier, funding, firstInv, fundingPeriod){
+        // Hard code one set lol update with actual values
+        update= [12, 56, 22, 10];
+        curr_view=='separate' ? draw_separate(update):draw_stacked(update);
+
+        // var data = JSON.stringify({ example: [tier, funding, firstInv, fundingPeriod] });
+                                  
+        // $.ajax({
+        //       type: "POST",
+        //       contentType: "application/json; charset=utf-8",
+        //       url: "/overallRating/",
+        //       dataType: "json",
+        //       async: true,
+        //       data: data,
+        //       success: function (data) {
+        //                 var chance = 100 * data["overallRating"];
+        //                 d3.select("#chancebar").attr("width", chance_scale(chance));
+        //                 d3.select("#percent_text")
+        //                     .attr("x", chance_scale(chance-5))
+        //                     .text(chance.toFixed(1) + "%");
+        //                 },
+        //                 error: function (result) {}
+        //       })
+    }
+    
+    //What happens on click
+    d3.select("button.separate_bar")
+      .on("click", function() {
+        curr_view = 'separate';
+        draw_separate(update);
+    });
+    d3.select("button.stacked_bar")
+      .on("click", function() {
+        curr_view = "stacked";
+        draw_stacked(update);
+    }); 
+
+    </script>
+  </body>
+</html>
