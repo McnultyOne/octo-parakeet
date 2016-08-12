@@ -64,11 +64,12 @@
     <button class="separate_bar">Separate</button>
     <button class="stacked_bar">Stacked</button>
     <br><br>
-    
+
     <svg></svg>
     <svg class="chart"></svg>
     <svg class="legend"></svg>
-    
+
+
     <div id="sliders" class="wrapper">
 
       <h2 class="feature">Investor tier: <span id="tier">1</span></h2>
@@ -76,6 +77,8 @@
 
       <h2 class="feature">Funding received: <span id="funding">$500,000,000</span></h2>
       <div id="funding_slider"></div>
+      <h2 class="feature">Funding Rounds: <span id="fundingCount">1</span></h2>
+      <div id="fundingCount_slider"></div>
 
       <h2 class="feature">Days from founding to first investment: <span id="firstInv">100 days</span></h2>
       <div id="firstInv_slider"></div>
@@ -112,10 +115,12 @@
 
     var curr_tier = 1;
     var curr_funding = 500000000;
+    var curr_fundingCount = 1;
     var curr_firstInv = 100;
     var curr_fundingPeriod = 365;
     var current_goodness = 50.0;
-   
+
+
     d3.select('#tier_slider')
       .call(
       d3.slider()
@@ -127,7 +132,7 @@
       .on("slide", function(evt,value) {
       d3.select('#tier').text(value);
       curr_tier = value;
-      getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+      getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
       }
       )
       );
@@ -137,17 +142,32 @@
           d3.slider()
           .value(curr_funding)
           .min(0)
-          .max(1000000000)
+          .max(500000000)
           .step(50000)
           .axis(true)
           .on("slide", function(evt,value) {
               d3.select('#funding').text("$" + value);
               curr_funding = value;
-              getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+              getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
               }
           )
       );
 
+      d3.select('#fundingCount_slider')
+            .call(
+            d3.slider()
+            .value(curr_fundingCount)
+            .min(0)
+            .max(20)
+            .step(1)
+            .axis(true)
+            .on("slide", function(evt,value) {
+                d3.select('#fundingCount').text(value);
+                curr_fundingCount = value;
+                getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
+                }
+            )
+        );
     d3.select('#firstInv_slider')
           .call(
           d3.slider()
@@ -159,7 +179,7 @@
           .on("slide", function(evt,value) {
               d3.select('#firstInv').text(value + " days");
               curr_firstInv = value;
-              getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+              getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
               }
           )
       );
@@ -172,9 +192,9 @@
       .step(5)
       .axis(true)
       .on("slide", function(evt,value) {
-      d3.select('#fundingPeriod').text(value > 30? ((value/30)+"months"):(value+"days"));
-      curr_fundingPeriod = value;
-      getAndDrawPred(curr_tier, curr_funding, curr_firstInv, curr_fundingPeriod)
+      d3.select('#fundingPeriod').text(value  + " days");
+      curr_fundingPeriod = value ;
+      getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
       }
       )
       );
@@ -292,16 +312,189 @@ function draw_separate(data){
 
     }
 
-    draw_separate(data)    
+    draw_separate(data)
     var update = data;
 
-    function getAndDrawPred(tier, funding, firstInv, fundingPeriod){
+    function getAndDrawPred(tier, funding, funding_Count, firstInv, fundingPeriod){
         // Hard code one set lol update with actual values
-        update= [12, 56, 22, 10];
-        curr_view=='separate' ? draw_separate(update):draw_stacked(update);
+
+        var tier_1 = 0 ;
+        var tier_2 = 0 ;
+        var tier_3 = 0 ;
+        var tier_4 = 0 ;
+        var tier_5 = 0 ;
+
+        if (tier == 1){
+            tier_1 = 1
+          }
+        else if (tier==2){
+          tier_2 = 1
+        }
+        else if (tier==3){
+          tier_3 = 1
+        }
+        else if (tier==4){
+          tier_4 = 1
+        }
+        else{
+          tier_5 = 1
+        } ;
+
+        var data  = JSON.stringify({
+          example:   {'funding_total_usd' : funding,
+                      'funding_rounds' : funding_Count,
+                      'daysToFirstFunding' : firstInv,
+                      'daysBetweenFirstLastFunding' : fundingPeriod,
+                      'tier_1' : tier_1,
+                      'tier_2' : tier_2,
+                      'tier_3' : tier_3,
+                      'tier_4' : tier_4,
+                      'tier_5' : tier_5,
+                      'numberOfRatings' : 114,
+                      'overallRating' : 3.2,
+                      'compensationAndBenefitsRating' : 3.2,
+                      'careerOpportunitiesRating' : 3,
+                      'recommendToFriendRating' : 0.6,
+                      'cultureAndValuesRating' : 3.2,
+                      'workLifeBalanceRating' : 3.2,
+                      'seniorLeadershipRating' : 2.8,
+                      'ceonumratings' : 4376,
+                      'ceopctapprove' : 74,
+                      'Advertising' : 0,
+                      'Analytics' : 0,
+                      'Android' : 0,
+                      'Apps' : 0,
+                      'Automotive' : 0,
+                      'B2B' : 0,
+                      'Big Data' : 0,
+                      'Big Data Analytics' : 0,
+                      'Biotechnology' : 0,
+                      'Brand Marketing' : 0,
+                      'Business Intelligence' : 0,
+                      'Business Services' : 0,
+                      'CRM' : 0,
+                      'Clean Technology' : 0,
+                      'Cloud Computing' : 0,
+                      'Collaboration' : 0,
+                      'Consulting' : 0,
+                      'Consumer Electronics' : 0,
+                      'Consumer Goods' : 0,
+                      'Content' : 0,
+                      'Crowdsourcing' : 0,
+                      'Curated Web' : 0,
+                      'Databases' : 0,
+                      'Design' : 0,
+                      'Digital Media' : 0,
+                      'E-Commerce' : 0,
+                      'EdTech' : 0,
+                      'Education' : 0,
+                      'Energy' : 0,
+                      'Enterprise Software' : 0,
+                      'Enterprises' : 0,
+                      'Entertainment' : 0,
+                      'Events' : 0,
+                      'Fashion' : 0,
+                      'FinTech' : 0,
+                      'Finance' : 0,
+                      'Financial Services' : 0,
+                      'Fitness' : 0,
+                      'Games' : 0,
+                      'Hardware' : 0,
+                      'Hardware + Software' : 0,
+                      'Health Care' : 0,
+                      'Health Care Information Technology' : 0,
+                      'Health Diagnostics' : 0,
+                      'Health and Wellness' : 0,
+                      'Hospitality' : 0,
+                      'Human Resources' : 0,
+                      'Information Technology' : 0,
+                      'Internet' : 0,
+                      'Internet Marketing' : 0,
+                      'Internet of Things' : 0,
+                      'Local' : 0,
+                      'Location Based Services' : 0,
+                      'Manufacturing' : 0,
+                      'Marketing Automation' : 0,
+                      'Marketplaces' : 0,
+                      'Media' : 0,
+                      'Medical' : 0,
+                      'Medical Devices' : 0,
+                      'Messaging' : 0,
+                      'Mobile' : 0,
+                      'Mobile Commerce' : 0,
+                      'Music' : 0,
+                      'Networking' : 0,
+                      'News' : 0,
+                      'Nonprofits' : 0,
+                      'Payments' : 0,
+                      'Pharmaceuticals' : 0,
+                      'Photography' : 0,
+                      'Public Relations' : 0,
+                      'Publishing' : 0,
+                      'Real Estate' : 0,
+                      'Real Time' : 0,
+                      'Recruiting' : 0,
+                      'Restaurants' : 0,
+                      'Retail' : 0,
+                      'Reviews and Recommendations' : 0,
+                      'SaaS' : 0,
+                      'Sales and Marketing' : 0,
+                      'Search' : 0,
+                      'Security' : 0,
+                      'Semiconductors' : 0,
+                      'Services' : 0,
+                      'Social Commerce' : 0,
+                      'Social Media' : 0,
+                      'Social Network Media' : 0,
+                      'Software' : 0,
+                      'Sports' : 0,
+                      'Startups' : 0,
+                      'Technology' : 0,
+                      'Telecommunications' : 0,
+                      'Transportation' : 0,
+                      'Travel' : 0,
+                      'Video' : 0,
+                      'Video Streaming' : 0,
+                      'Web Development' : 0,
+                      'Web Hosting' : 0,
+                      'Wireless' : 0,
+                      'iOS' : 0,
+                      'iPhone' : 0}
+
+        });
+
+        $.ajax({
+          type: "POST",
+          contentType: "application/json; charset=utf-8",
+          url: "/score/",
+          dataType: "json",
+          async: true,
+          data: data,
+          success: function (data) {
+            var oper = 100 * data["oper"];
+                 oper = Math.round(oper * 100) / 100;
+            var close = 100 * data["close"];
+              close = Math.round(close * 100) / 100;
+            var acq = 100 * data["acq"];
+              acq = Math.round(acq * 100) / 100;
+            var ipo = 100 * data["ipo"];
+              ipo = Math.round(ipo * 100) / 100;
+
+            var scoreVal = data["close"]*20 + data["oper"]*40 + data["acq"]*70 + data["ipo"]*100 ;
+            scoreVal = Math.round(scoreVal * 100) / 100;
+
+            update= [ipo,acq,oper,close];
+            curr_view=='separate' ? draw_separate(update):draw_stacked(update);
+
+
+            },
+          error: function (result) {
+          }
+        })
+
 
         // var data = JSON.stringify({ example: [tier, funding, firstInv, fundingPeriod] });
-                                  
+
         // $.ajax({
         //       type: "POST",
         //       contentType: "application/json; charset=utf-8",
@@ -319,7 +512,7 @@ function draw_separate(data){
         //                 error: function (result) {}
         //       })
     }
-    
+
     //What happens on click
     d3.select("button.separate_bar")
       .on("click", function() {
@@ -330,7 +523,7 @@ function draw_separate(data){
       .on("click", function() {
         curr_view = "stacked";
         draw_stacked(update);
-    }); 
+    });
 
     </script>
   </body>
