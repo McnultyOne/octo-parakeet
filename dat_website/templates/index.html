@@ -21,15 +21,46 @@
        margin-bottom: 20 px;
      }
 
+     .score {
+       font-size: 2em;
+       margin: 60px 0 5px 0;
+       text-align: center;
+       color: gray;
+     }
+
+     .scoreVal {
+       font-size: 3em;
+       margin: 60px 0 5px 0;
+       text-align: center;
+       color: green;
+     }
+     
      .wrapper {
        width: 800px;
        margin-left: auto;
        margin-right: auto;
        margin-bottom: 0px;
+
      }
 
-     span {
-       color: steelblue;
+     .feature {
+       color: grey;
+     }
+
+     #tier {
+        color: steelblue;
+     }
+     #funding {
+        color: steelblue;
+     }
+     #fundingCount {
+        color: steelblue;
+     }
+     #firstInv {
+        color: steelblue;
+     }
+     #fundingPeriod {
+        color: steelblue;
      }
 
       .chart rect {
@@ -53,14 +84,16 @@
 
   <body>
 
-    <div id="chart_area" class="wrapper">
+<!--     <div id="chart_area" class="wrapper">
       <h2>Prediction</h2>
       <p class="space"></p>
       </div>
     </div>
+ -->
+    <h2 class="score" >Score:</h2>
+    <h2 class="scoreVal" ><span id="scoreID">0</span></h2>
 
     <svg class = "button_spacer"></svg>
-
     <button class="separate_bar">Separate</button>
     <button class="stacked_bar">Stacked</button>
     <br><br>
@@ -69,14 +102,11 @@
     <svg class="chart"></svg>
     <svg class="legend"></svg>
 
-
     <div id="sliders" class="wrapper">
-
-      <h2 class="feature">Investor tier: <span id="tier">1</span></h2>
-      <div id="tier_slider"></div>
 
       <h2 class="feature">Funding received: <span id="funding">$500,000,000</span></h2>
       <div id="funding_slider"></div>
+      
       <h2 class="feature">Funding Rounds: <span id="fundingCount">1</span></h2>
       <div id="fundingCount_slider"></div>
 
@@ -86,6 +116,9 @@
       <h2 class="feature">Total funding period: <span id = "fundingPeriod"> 365 </span></h2>
       <div id="fundingPeriod_slider"></div>
 
+      <h2 class="feature">Investor tier: <span id="tier">1</span></h2>
+      <div id="tier_slider"></div>
+      
     </div>
 
     <!-- Import the libraries: jQuery, d3, d3.slider -->
@@ -93,8 +126,6 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="static/d3.slider.js"></script>
-
-
 
     <!-- <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
     <script>
@@ -153,21 +184,22 @@
           )
       );
 
-      d3.select('#fundingCount_slider')
-            .call(
-            d3.slider()
-            .value(curr_fundingCount)
-            .min(0)
-            .max(20)
-            .step(1)
-            .axis(true)
-            .on("slide", function(evt,value) {
-                d3.select('#fundingCount').text(value);
-                curr_fundingCount = value;
-                getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
-                }
-            )
-        );
+    d3.select('#fundingCount_slider')
+          .call(
+          d3.slider()
+          .value(curr_fundingCount)
+          .min(0)
+          .max(20)
+          .step(1)
+          .axis(true)
+          .on("slide", function(evt,value) {
+              d3.select('#fundingCount').text(value);
+              curr_fundingCount = value;
+              getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
+              }
+          )
+      );
+
     d3.select('#firstInv_slider')
           .call(
           d3.slider()
@@ -197,11 +229,15 @@
       getAndDrawPred(curr_tier, curr_funding, curr_fundingCount, curr_firstInv, curr_fundingPeriod)
       }
       )
-      );
+    );
 
     d3.select(".button_spacer")
       .attr("width", 300)
       .attr("height", 1);
+
+function print_score(data){
+    d3.select('#scoreID').text(data);
+}
 
 function draw_separate(data){
 
@@ -210,7 +246,6 @@ function draw_separate(data){
       .attr("height", height * data.length)
       .attr("align", "center")
 
-  // d3.select(".chart").attr("align", "center");
   //Rectangles
   var bar = chart.selectAll("rect")
         .data(data)
@@ -274,14 +309,14 @@ function draw_separate(data){
 
     function draw_stacked(data){
 
-      var chart = d3.select(".chart")
-          .attr("width", width)
-          .attr("height", height * data.length)
+          var chart = d3.select(".chart")
+              .attr("width", width)
+              .attr("height", height * data.length)
 
-      var bar = chart.selectAll("rect")
-          .data(data)
-          .enter().append("rect")
-          .style("fill", function(d) { return color(d); });
+          var bar = chart.selectAll("rect")
+              .data(data)
+              .enter().append("rect")
+              .style("fill", function(d) { return color(d); });
 
 
           chart.selectAll("rect")
@@ -471,8 +506,9 @@ function draw_separate(data){
           async: true,
           data: data,
           success: function (data) {
+
             var oper = 100 * data["oper"];
-                 oper = Math.round(oper * 100) / 100;
+              oper = Math.round(oper * 100) / 100;
             var close = 100 * data["close"];
               close = Math.round(close * 100) / 100;
             var acq = 100 * data["acq"];
@@ -482,35 +518,14 @@ function draw_separate(data){
 
             var scoreVal = data["close"]*20 + data["oper"]*40 + data["acq"]*70 + data["ipo"]*100 ;
             scoreVal = Math.round(scoreVal * 100) / 100;
+            print_score(scoreVal);
 
             update= [ipo,acq,oper,close];
             curr_view=='separate' ? draw_separate(update):draw_stacked(update);
-
-
             },
           error: function (result) {
           }
         })
-
-
-        // var data = JSON.stringify({ example: [tier, funding, firstInv, fundingPeriod] });
-
-        // $.ajax({
-        //       type: "POST",
-        //       contentType: "application/json; charset=utf-8",
-        //       url: "/overallRating/",
-        //       dataType: "json",
-        //       async: true,
-        //       data: data,
-        //       success: function (data) {
-        //                 var chance = 100 * data["overallRating"];
-        //                 d3.select("#chancebar").attr("width", chance_scale(chance));
-        //                 d3.select("#percent_text")
-        //                     .attr("x", chance_scale(chance-5))
-        //                     .text(chance.toFixed(1) + "%");
-        //                 },
-        //                 error: function (result) {}
-        //       })
     }
 
     //What happens on click
