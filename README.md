@@ -1,4 +1,7 @@
-# octo-parakeet
-Metis SF Summer 2016 - Project McNulty Team 1!
+# Startup Prediction Project
 
-oh hai
+### Includes Data Scraping and Analysis in ipynb notebooks
+
+### Flask Website with D3 visualization in dat_website folder
+
+### Additional geographic D3 visualizations in mappingUSstates folder
